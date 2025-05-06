@@ -211,6 +211,9 @@ function main() {
   // Specify the color for clearing <canvas>
   gl.clearColor(0.0, 0.0, 0.0, 1.0);
 
+  gl.enable(gl.BLEND);
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
   requestAnimationFrame(tick);
 }
 
@@ -347,7 +350,14 @@ function removeBlock(camera) {
   }
 }
 
+let raindrops = [];
 
+for (let i = 0; i < 200; i++) {
+  let x = Math.random() * 32;
+  let y = Math.random() * 20;
+  let z = Math.random() * 32 - 25;
+  raindrops.push(new Raindrop(x, y, z));
+}
 
 // Draw every shape that is supposed to be in the canvas
 function renderScene() {
@@ -365,20 +375,20 @@ function renderScene() {
 
   var sky = new Cube();
   sky.textureNum = 0;
-  sky.matrix.scale(50, 10, 50);
-  sky.matrix.translate(0, -0.001, 0.19);
+  sky.matrix.scale(38, 10, 38);
+  sky.matrix.translate(-0.05, -0.001, 0.25);
   sky.renderfast();
 
   var sun = new Cube();
   sun.textureNum = 2;
   sun.matrix.scale(2, 2, 2);
-  sun.matrix.translate(0, 4, -19.3);
+  sun.matrix.translate(-0.9, 4, -13.25);
   sun.renderfast();
 
   var ground = new Cube();
   ground.color = [0.5, 0.7, 0.2, 1.0];
-  ground.matrix.translate(0, -0.001, 9.5);
-  ground.matrix.scale(50, 0, 50);
+  ground.matrix.translate(-1.92, -0.001, 9.5);
+  ground.matrix.scale(38, 0, 38);
   ground.matrix.translate(0, 0, 0);
   ground.renderfast();
 
@@ -395,6 +405,13 @@ function renderScene() {
     chicken_j.renderfast();
 
   drawMap();
+
+  for (let drop of raindrops) {
+    drop.update();
+    drop.render();
+  }
+
+  
   // Check the time at the end of the function, and show on web page
   var duration = performance.now() - startTime;
   sendTextToHTML(" ms: " + Math.floor(duration) + " fps: " + Math.floor(10000 / duration) / 10, "numdot");

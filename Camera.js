@@ -98,8 +98,6 @@ class Camera {
   
         this.at.set(this.eye).add(f_prime);
   
-        // End camera pan calculations
-  
         this.updateMatrices();
     }
   
@@ -150,30 +148,28 @@ class Camera {
   
         this.at.set(this.eye).add(f_prime);
         this.up = new Vector3([0, 1, 0]);
-    
-        // End camera tilt calculations
-    
+
         this.updateMatrices();
     }
   
     updateMatrices() {
-      this.projMat.setPerspective(
-        this.fov,
-        this.canvas.width / this.canvas.height,
-        0.1,
-        100
-      );
-  
-      this.viewMat.setLookAt(
-        this.eye.elements[0],
-        this.eye.elements[1],
-        this.eye.elements[2],
-        this.at.elements[0],
-        this.at.elements[1],
-        this.at.elements[2],
-        this.up.elements[0],
-        this.up.elements[1],
-        this.up.elements[2]
-      );
+        this.projMat.setPerspective(
+            this.fov,
+            this.canvas.width / this.canvas.height,
+            0.1,
+            100
+        );
+
+        this.viewMat.setLookAt(
+            this.eye.elements[0],
+            this.eye.elements[1],
+            this.eye.elements[2],
+            this.at.elements[0],
+            this.at.elements[1],
+            this.at.elements[2],
+            this.up.elements[0],
+            this.up.elements[1],
+            this.up.elements[2]
+        );
     }
 }
