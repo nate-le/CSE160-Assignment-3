@@ -20,6 +20,10 @@ var FSHADER_SOURCE = `
   uniform vec4 u_FragColor;
   uniform sampler2D u_Sampler0;
   uniform sampler2D u_Sampler1;
+  uniform sampler2D u_Sampler2;
+  uniform sampler2D u_Sampler3;
+  uniform sampler2D u_Sampler4;
+  uniform sampler2D u_Sampler5;
   uniform int u_whichTexture;
   void main() {
     if (u_whichTexture == -2) {
@@ -30,6 +34,14 @@ var FSHADER_SOURCE = `
         gl_FragColor = texture2D(u_Sampler0, v_UV);
       } else if (u_whichTexture == 1) {
         gl_FragColor = texture2D(u_Sampler1, v_UV);
+      } else if (u_whichTexture == 2) {
+        gl_FragColor = texture2D(u_Sampler2, v_UV);
+      } else if (u_whichTexture == 3) {
+        gl_FragColor = texture2D(u_Sampler3, v_UV);
+      } else if (u_whichTexture == 4) {
+        gl_FragColor = texture2D(u_Sampler4, v_UV);
+      } else if (u_whichTexture == 5) {
+        gl_FragColor = texture2D(u_Sampler5, v_UV);
       } else {
         gl_FragColor = vec4(1, 0.2, 0.2, 1);
       }
@@ -53,7 +65,11 @@ let rotateSensitivity = 0.15;
 
 const textures = [
   "sky.jpg",
-  "dirt.jpg"
+  "dirt.jpg",
+  "sun.jpg",
+  "chicken.jpg",
+  "egg.jpg",
+  "chicken_jockey.jpg"
 ];
 
 // Globals related UI elements
@@ -134,14 +150,14 @@ function connectVariablesToGLSL() {
 // Set up actions for the HTML UI elements
 function addActionsForHtmlUI() {
   document.addEventListener("keydown", keydown);
-
   let isDragging = false;
   let lastX = 0;
   let lastY = 0;
-
   canvas.addEventListener("mousedown", (ev) => { if (ev.button === 0) { isDragging = true; lastX = ev.clientX; lastY = ev.clientY; document.body.style.cursor = "none"; } });
 
-  document.addEventListener("mousemove", (ev) => { if (isDragging) { let deltaX = ev.clientX - lastX; let deltaY = ev.clientY - lastY; camera.pan(deltaX * rotateSensitivity); camera.tilt(-deltaY * rotateSensitivity); lastX = ev.clientX; lastY = ev.clientY; } });
+  document.addEventListener("mousemove", (ev) => { if (isDragging) { let deltaX = ev.clientX - lastX; let deltaY = ev.clientY - lastY; camera.pan(-deltaX * rotateSensitivity); camera.tilt(deltaY * rotateSensitivity); lastX = ev.clientX; lastY = ev.clientY; } });
+
+  document.addEventListener("mouseup", () => { isDragging = false; document.body.style.cursor = "default"; });
 }
 
 function initTextures() {
@@ -243,42 +259,94 @@ function keydown(ev) {
     camera.right();
   } else if (ev.keyCode == 81) {
     // Q
-    camera.pan(-5);
+    camera.pan(5);
   } else if (ev.keyCode == 69) {
     // E
-    camera.pan(5);
+    camera.pan(-5);
   } else if (ev.keyCode == 70) {
     // F
-    map.addBlock();
+    addBlock(camera);
   } else if (ev.keyCode == 71) {
     // G
-    map.removeBlock();
+    removeBlock(camera);
   }
 }
 
-var g_map = [
-  [1, 1, 1, 1, 1, 1, 1, 1],
-  [1, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 0, 1, 0, 0, 0, 1],
-  [1, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 0, 0, 0, 1, 0, 1],
-  [1, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 0, 0, 0, 0, 0, 1],
-  [1, 0, 1, 0, 0, 0, 0, 1],
+let base = [
+  [3, 0, 1, 1, 1, 1, 1, 4],
+  [1, 0, 0, 3, 0, 2, 0, 0],
+  [1, 0, 1, 1, 0, 0, 0, 0],
+  [0, 0, 3, 0, 0, 0, 1, 0],
+  [1, 0, 2, 0, 0, 1, 0, 0],
+  [1, 0, 0, 0, 0, 0, 0, 0],
+  [1, 0, 0, 3, 0, 0, 0, 0],
+  [4, 0, 1, 0, 0, 0, 0, 4],
 ];
 
-function drawMap() {
-  for (x = 0; x < 8; x += 1) {
-    for (y = 0; y < 8; y += 1)
-      if (g_map[x][y] == 1) {
-        var body = new Cube();
-        body.textureNum = 1;
-        body.color = [1.0, 1.0, 1.0, 1.0];
-        body.matrix.translate(x, 0, y);
-        body.renderfast();
-      }
+let g_map = [];
+for (let i = 0; i < 32; i++) {
+  g_map[i] = [];
+  for (let j = 0; j < 32; j++) {
+    g_map[i][j] = base[i % 8][j % 8];
   }
 }
+
+
+function drawMap() {
+  for (let x = 0; x < 32; x += 1) {
+    for (let z = 0; z < 32; z += 1) {
+      let height = g_map[x][z];
+      for (let y = 0; y < height; y += 1) {
+        if (y < 2) {
+          let cube = new Cube();
+          cube.textureNum = 1;
+          cube.matrix.translate(x, y, z - 25);
+          cube.renderfast(); 
+        } else {
+          let chicken = new Cube();
+          chicken.textureNum = 3;
+          chicken.matrix.translate(x, y, z - 25);
+          chicken.renderfast();
+        }
+      }
+    }
+  }
+}
+
+function getFacingCell(camera) {
+  let f = new Vector3();
+  f.set(camera.at);
+  f.sub(camera.eye);
+  f.normalize();
+
+  let dx = Math.round(f.elements[0]);
+  let dz = Math.round(f.elements[2]);
+
+  let x = Math.floor(camera.eye.elements[0] + dx);
+  let z = Math.floor(camera.eye.elements[2] + dz + 25);
+
+  x = Math.max(0, Math.min(31, x));
+  z = Math.max(0, Math.min(31, z));
+
+  return {x, z};
+}
+
+function addBlock(camera) {
+  let {x, z} = getFacingCell(camera);
+  if (g_map[x][z] < 10) {
+    g_map[x][z] += 1;
+    drawMap();
+  }
+}
+
+function removeBlock(camera) {
+  let {x, z} = getFacingCell(camera);
+  if (g_map[x][z] > 0) {
+    g_map[x][z] -= 1;
+    drawMap();
+  }
+}
+
 
 
 // Draw every shape that is supposed to be in the canvas
@@ -298,17 +366,33 @@ function renderScene() {
   var sky = new Cube();
   sky.textureNum = 0;
   sky.matrix.scale(50, 10, 50);
-  sky.matrix.translate(0, -0.001, 0.955);
+  sky.matrix.translate(0, -0.001, 0.19);
   sky.renderfast();
-  sky.matrix.setIdentity();
 
-  // world ground
+  var sun = new Cube();
+  sun.textureNum = 2;
+  sun.matrix.scale(2, 2, 2);
+  sun.matrix.translate(0, 4, -19.3);
+  sun.renderfast();
+
   var ground = new Cube();
-  ground.color = [0.478, 0.741, 0.216, 1.0];
+  ground.color = [0.5, 0.7, 0.2, 1.0];
   ground.matrix.translate(0, -0.001, 9.5);
   ground.matrix.scale(50, 0, 50);
   ground.matrix.translate(0, 0, 0);
   ground.renderfast();
+
+  var egg = new Cube();
+  egg.textureNum = 4;
+  egg.matrix.scale(.5, .5, .5);
+  egg.matrix.translate(8 , 2, 8);
+  egg.renderfast();
+
+  let chicken_j = new Cube();
+    chicken_j.textureNum = 5;
+    chicken_j.matrix.scale(1, 1, 1);
+    chicken_j.matrix.translate(3.8 , 1.5, 4.2);
+    chicken_j.renderfast();
 
   drawMap();
   // Check the time at the end of the function, and show on web page

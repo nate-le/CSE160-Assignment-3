@@ -13,7 +13,6 @@ class Triangle {
 
     // Pass the color of a Triangle to u_FragColor variable
     gl.uniform4f(u_FragColor, rgba[0], rgba[1], rgba[2], rgba[3]);
-
     // Pass the size of a Triangle to u_Size variable
     gl.uniform1f(u_Size, size);
 
@@ -40,7 +39,6 @@ function drawTriangle(vertices) {
 
   // Assign the buffer object to a_Position variable
   gl.vertexAttribPointer(a_Position, 2, gl.FLOAT, false, 0, 0);
-
   // Enable the assignment to a_Position variable
   gl.enableVertexAttribArray(a_Position);
 
@@ -59,7 +57,6 @@ function initTriangle3D() {
   gl.bindBuffer(gl.ARRAY_BUFFER, g_vertexBuffer);
 
   gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, 0, 0);
-
   gl.enableVertexAttribArray(a_Position);
 }
 
@@ -86,6 +83,7 @@ function drawTriangle3DUV(vertices, uv) {
 
   gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.DYNAMIC_DRAW);
+
   gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(a_Position);
 
@@ -97,6 +95,7 @@ function drawTriangle3DUV(vertices, uv) {
 
   gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(uv), gl.DYNAMIC_DRAW);
+
   gl.vertexAttribPointer(a_UV, 2, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(a_UV);
 

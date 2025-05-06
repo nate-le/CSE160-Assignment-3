@@ -57,7 +57,6 @@ class Cube {
     drawTriangle3DUV([0, 0, 0, 1, 1, 0, 1, 0, 0], [0, 0, 1, 1, 1, 0]);
     drawTriangle3DUV([0, 0, 0, 0, 1, 0, 1, 1, 0], [0, 0, 0, 1, 1, 1]);
 
-    // fake lighting
     gl.uniform4f(
       u_FragColor,
       rgba[0] * 0.9,
@@ -100,12 +99,14 @@ class Cube {
 
     gl.bindBuffer(gl.ARRAY_BUFFER, g_vertexBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, this.cubeVerts32, gl.DYNAMIC_DRAW);
+
     gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(a_Position);
 
     var uvBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, uvBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, this.cubeUVs, gl.DYNAMIC_DRAW);
+
     gl.vertexAttribPointer(a_UV, 2, gl.FLOAT, false, 0, 0);
     gl.enableVertexAttribArray(a_UV);
 
@@ -149,6 +150,7 @@ function drawCube(matrix, color) {
 
   gl.vertexAttribPointer(a_Position, 3, gl.FLOAT, false, 0, 0);
   gl.enableVertexAttribArray(a_Position);
+  
   gl.uniformMatrix4fv(u_ModelMatrix, false, matrix.elements);
   gl.uniform4f(u_FragColor, color[0], color[1], color[2], color[3]);
 
